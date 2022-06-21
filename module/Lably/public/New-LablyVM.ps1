@@ -50,6 +50,10 @@ Function New-LablyVM {
 
     Optional number of virtual CPUs to assign to the VM. Defaults to 1/4th of the total number of logical processors that the host has.
 
+    .PARAMETER VLAN
+
+    Optional way to tell Lably to set a VLAN on a vNIC
+
     .PARAMETER ProductKey
 
     Optional product key that should be used when building the VM. The product key is typically stored in the Base VHD, so this parameter is only necessary if you didn't include one in the Base VHD or if you'd like to use a different one for this VM.
@@ -127,6 +131,9 @@ Function New-LablyVM {
 
         [Parameter(Mandatory=$False)]
         [Int]$CPUCount = [Math]::Max(1,$(Get-CimInstance -Class Win32_Processor).NumberOfLogicalProcessors/4),
+
+        [Parameter(Mandatory=$False)]
+        [Int]$VLan,
 
         [Parameter(Mandatory=$False)]
         [String]$ProductKey,
@@ -402,6 +409,18 @@ Function New-LablyVM {
     } Catch {
         Write-Host " Warning!" -ForegroundColor Yellow
         Write-Warning "Unable to change VM CPU Settings. $($_.Exception.Message)"        
+    }
+
+    if($null -eq $VLan) {
+        #do nothing
+    } else {
+        Try {
+            Set-VMNetworkAdapterVlan -VM $NewVM -Access -VlanId $VLan -ErrorAction Stop
+            Write-Host " Success. Set VLAN to $VLan" -ForegroundColor Green
+        } Catch {
+            Write-Host " Warning!" -ForegroundColor Yellow
+            Write-Warning "Unable to change set VLAN setting. $($_.Exception.Message)"        
+        }
     }
 
     Write-Host "[Lably] " -ForegroundColor Magenta -NoNewline
