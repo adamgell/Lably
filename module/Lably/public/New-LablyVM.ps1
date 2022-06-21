@@ -411,12 +411,15 @@ Function New-LablyVM {
         Write-Warning "Unable to change VM CPU Settings. $($_.Exception.Message)"        
     }
 
+
     if($null -eq $VLan) {
         #do nothing
     } else {
         Try {
+            Write-Host "[Hyper-V] " -ForegroundColor Magenta -NoNewline
+            Write-Host "Configuring VM with $VLan ID" -NoNewline
             Set-VMNetworkAdapterVlan -VM $NewVM -Access -VlanId $VLan -ErrorAction Stop
-            Write-Host " Success. Set VLAN to $VLan" -ForegroundColor Green
+            Write-Host " Success." -ForegroundColor Green
         } Catch {
             Write-Host " Warning!" -ForegroundColor Yellow
             Write-Warning "Unable to change set VLAN setting. $($_.Exception.Message)"        
